@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"reflect"
 	"sync"
 	"time"
@@ -115,15 +116,14 @@ func (c *Client) RequestGetQUIC(route string) *goja.Promise { // TODO: add custo
 	var keyLog io.Writer
 
 	pool, err := x509.SystemCertPool()
+	timeNow := time.Now()
 	if err != nil {
 		c.pushRequestMetrics(route, time.Since(timeNow), false, false)
 		reject(err)
 		return promise
 	}
 
-	timeNow := time.Now()
-
-	mid, rsp, err := c.client.GetQUIC(route, &tls.Config{
+	_, rsp, err := c.client.GetQUIC(route, &tls.Config{
 		RootCAs:            pool,
 		InsecureSkipVerify: true,
 		KeyLogWriter:       keyLog,
@@ -137,7 +137,7 @@ func (c *Client) RequestGetQUIC(route string) *goja.Promise { // TODO: add custo
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	go func(rsp *Response) {
+	go func(rsp *http.Response) {
 		defer wg.Done()
 		defer rsp.Body.Close()
 		body := &bytes.Buffer{}
@@ -145,7 +145,7 @@ func (c *Client) RequestGetQUIC(route string) *goja.Promise { // TODO: add custo
 		if err != nil {
 			c.pushRequestMetrics(route, time.Since(timeNow), false, false)
 			reject(err)
-			return promise
+			return
 		}
 		resolve(body.Bytes())
 	}(rsp)

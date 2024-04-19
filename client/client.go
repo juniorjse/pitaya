@@ -28,8 +28,8 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"net/url"
 	"net/http"
+	"net/url"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -420,8 +420,8 @@ func (c *Client) SendRequest(route string, data []byte) (uint, error) {
 }
 
 // TODO: Verify sendMsg later
-func (c *Client) GetQUIC(addr string, tlsConfig *tls.Config) (ID uint, rsp *http.Response, err error){
-	ID = uint(atomic.AddUint32(&c.nextID, 1));
+func (c *Client) GetQUIC(addr string, tlsConfig *tls.Config) (ID uint, rsp *http.Response, err error) {
+	ID = uint(atomic.AddUint32(&c.nextID, 1))
 	roundTripper := &http3.RoundTripper{
 		TLSClientConfig: tlsConfig,
 		QuicConfig: &quic.Config{
